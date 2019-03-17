@@ -105,3 +105,7 @@ venv.bak/
 
 #project specific
 data/raw/*
+data/external/*
+data/interim/*
+data/processed/*
+data/references/*
