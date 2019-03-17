@@ -102,17 +102,20 @@ get_range = lambda df, col: (df[col].min(), df[col].max())
 # =============================================================================
 # system utils
 def decimal_round(val, prec=1e-4):
-    """wrapper for rounding according to precision
     """
-    DD = decimal.Decimal
-    val_ = DD(val).quantize(DD(f'{prec}'), rounding=decimal.ROUND_DOWN)
+    wrapper for rounding according to precision
+    """
+    dd = decimal.Decimal
+    val_ = dd(val).quantize(dd(f'{prec}'), rounding=decimal.ROUND_DOWN)
     return float(val_)
 
 
 # =============================================================================
 # fn: code adapted from https://github.com/jonsedar/pymc3_vs_pystan/blob/master/convenience_functions.py
 def custom_describe(df, nidx=3, nfeats=20):
-    ''' Concat transposed topN rows, numerical desc & dtypes '''
+    """
+    Concat transposed topN rows, numerical desc & dtypes
+    """
 
     print(df.shape)
     nrows = df.shape[0]
@@ -140,7 +143,9 @@ def custom_describe(df, nidx=3, nfeats=20):
 
 
 def plot_tsne(dftsne, ft_num, ft_endog='is_vw'):
-    ''' Convenience fn: scatterplot t-sne rep with cat or cont color'''
+    """
+    Convenience fn: scatterplot t-sne rep with cat or cont color
+    """
 
     pal = 'cubehelix'
     leg = True
@@ -160,7 +165,9 @@ def trace_median(x):
 
 
 def plot_traces(trcs, retain=2500, varnames=None):
-    ''' Convenience fn: plot traces with overlaid means and values '''
+    """
+    Convenience fn: plot traces with overlaid means and values
+    """
     df_smry = pm.summary(trcs[-retain:], varnames=varnames)
 
     if varnames:

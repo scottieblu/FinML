@@ -155,7 +155,7 @@ class Bars:
         return xdf, xtdf
 
     def plot_sample_data(self, ref, sub, bar_type, *args, **kwds):
-        f, axes = plt.subplots(3, sharex=True, sharey=True, figsize=(10, 7))
+        f, axes = plt.subplots(3, sharex='True', sharey='True', figsize=(10, 7))
         ref.plot(*args, **kwds, ax=axes[0], label='price')
         sub.plot(*args, **kwds, ax=axes[0], marker='X', ls='', label=bar_type)
         axes[0].legend()

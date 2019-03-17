@@ -119,7 +119,7 @@ class Labeller:
         return out
 
     def getBins(self, events, close):
-        '''
+        """
         Compute event's outcome (including side information, if provided).
         events is a DataFrame where:
         -events.index is event's starttime
@@ -128,7 +128,7 @@ class Labeller:
         -events['side'] (optional) implies the algo's position side
         Case 1: ('side' not in events): bin in (-1,1) <-label by price action
         Case 2: ('side' in events): bin in (0,1) <-label by pnl (meta-labeling)
-        '''
+        """
         # 1) prices aligned with events
         events_ = events.dropna(subset=['t1'])
         px = events_.index.union(events_['t1'].values).drop_duplicates()
@@ -142,7 +142,7 @@ class Labeller:
         return out
 
     def getBinsNew(self, events, close, t1=None):
-        '''
+        """
         Compute event's outcome (including side information, if provided).
         events is a DataFrame where:
         -events.index is event's starttime
@@ -152,7 +152,7 @@ class Labeller:
         -t1 is original vertical barrier series
         Case 1: ('side' not in events): bin in (-1,1) <-label by price action
         Case 2: ('side' in events): bin in (0,1) <-label by pnl (meta-labeling)
-        '''
+        """
         # 1) prices aligned with events
         events_ = events.dropna(subset=['t1'])
         px = events_.index.union(events_['t1'].values).drop_duplicates()
