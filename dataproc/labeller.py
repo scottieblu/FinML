@@ -36,10 +36,10 @@ class Labeller:
                 break
             sPos, sNeg = max(0., pos), min(0., neg)
             if sNeg < -h:
-                sNeg = 0;
+                sNeg = 0
                 tEvents.append(i)
             elif sPos > h:
-                sPos = 0;
+                sPos = 0
                 tEvents.append(i)
         return pd.DatetimeIndex(tEvents)
 
@@ -175,3 +175,12 @@ class Labeller:
 
         if 'side' in events_: out.loc[out['ret'] <= 0, 'bin'] = 0  # meta-labeling
         return out
+
+    def dropLabels(self, events, minPct=.05):
+        # apply weights, drop labels with insufficient examples
+        while True:
+            df0 = events['bin'].value_counts(normalize=True)
+            if df0.min() > minPct or df0.shape[0] < 3: break
+            print('dropped label: ', df0.argmin(), df0.min())
+            events = events[events['bin'] != df0.argmin()]
+        return events

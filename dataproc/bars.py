@@ -158,7 +158,7 @@ class Bars:
         f, axes = plt.subplots(3, sharex=True, sharey=True, figsize=(10, 7))
         ref.plot(*args, **kwds, ax=axes[0], label='price')
         sub.plot(*args, **kwds, ax=axes[0], marker='X', ls='', label=bar_type)
-        axes[0].legend();
+        axes[0].legend()
 
         ref.plot(*args, **kwds, ax=axes[1], label='price', marker='o')
         sub.plot(*args, **kwds, ax=axes[2], ls='', marker='X',

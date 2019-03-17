@@ -95,7 +95,7 @@ class Processor:
         for i, out_ in enumerate(outputs, 1):
             out.append(out_)
             self.reportProgress(i, len(jobs), time0, task)
-        pool.close();
+        pool.close()
         pool.join()  # this is needed to prevent memory leaks
         return out
 
