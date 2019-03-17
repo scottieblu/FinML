@@ -5,7 +5,7 @@ import pandas as pd
 # import util libs
 from tqdm import tqdm
 
-from dataproc.processor import Processor
+from src.features import processor
 
 warnings.filterwarnings("ignore")
 
@@ -15,7 +15,7 @@ class Labeller:
       Class to calculate Triple barrier features
     """
 
-    processor = Processor()
+    processor = processor.Processor()
 
     def getTEvents(self, gRaw, h):
         """

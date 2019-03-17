@@ -110,7 +110,7 @@ class Bars:
         return pd.DataFrame(ohlc, columns=cols)
 
     def count_bars(self, df, group='1W', price_col='price'):
-        return df.groupby(pd.Grouper(group))[price_col].count()
+        return df.groupby(pd.TimeGrouper(group))[price_col].count()
 
     def scale(self, s):
         return (s - s.min()) / (s.max() - s.min())
