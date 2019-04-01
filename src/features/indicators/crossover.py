@@ -35,4 +35,4 @@ class MACrossover:
         close_df = self.close_df(close, fast_window, slow_window)
         up = self.get_up_cross(close_df)
         down = self.get_down_cross(close_df)
-        return pd.concat([pd.Series(1, index=up.index), pd.Series(-1, index=down.index)]).sort_index()
+        return pd.concat([pd.Series(1, index=up.index), pd.Series(-1, index=down.index)]).sort_index(), close_df
