@@ -1,5 +1,8 @@
 from multiprocessing import cpu_count
 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
 import src.features.bars as bar
 import src.features.datacleaner as dc
 import src.features.indicators.bollinger_band
@@ -8,7 +11,7 @@ import src.features.labeller as lab
 from src.utils.utils import *
 
 
-class FeatureProc:
+class Processor:
     # Classes for data processing
     data_cleaner = dc.DataCleaner()
     bars = bar.Bars()
@@ -47,6 +50,16 @@ class FeatureProc:
         close = dbars.price.copy()
         return self.labeller.getDailyVol(close).dropna(), close
 
+    def returns(self, s):
+        arr = np.diff(np.log(s))
+        return (pd.Series(arr, index=s.index[1:]))
+
+    def df_rolling_autocorr(self, df, window, lag=1):
+        """Compute rolling column-wise autocorrelation for a DataFrame."""
+
+        return (df.rolling(window=window)
+                .corr(df.shift(lag)))  # could .dropna() here
+
     def calcFeatures(self, file_name):
         self.df = self.loadParquetData(file_name)
         self.df = self.cleanResample(self.df, '1T')
@@ -70,13 +83,45 @@ class FeatureProc:
         ptsl = [0, 2]
         cpus = cpu_count() - 1
 
-        bb_events = labeller.getEvents(self.close, self.tEvents, ptsl, self.dailyVol, minRet, cpus, t1=self.t1,
-                                       side=bb_side_raw)
+        bb_events = self.labeller.getEvents(self.close, self.tEvents, ptsl, self.dailyVol, minRet, cpus, t1=self.t1,
+                                            side=bb_side_raw)
         bb_side = bb_events.dropna().side
+
+        srl_corr = self.df_rolling_autocorr(self.returns(self.close), window=window).rename('srl_corr')
 
         features = (pd.DataFrame()
                     .assign(vol=bb_events.trgt)
                     .assign(ma_side=ma_side)
-                    # .assign(srl_corr=srl_corr)
+                    .assign(srl_corr=srl_corr)
                     .drop_duplicates()
                     .dropna())
+
+        bb_bins = self.labeller.getBins(bb_events, self.close).dropna()
+
+        return features, bb_bins
+
+    def classifier(self, features, bins):
+        Xy = (pd.merge_asof(features, bb_bins[['bin']],
+                            left_index=True, right_index=True,
+                            direction='forward').dropna())
+
+        X = Xy.drop('bin', axis=1).values
+        y = Xy['bin'].values
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5,
+                                                            shuffle=False)
+
+        n_estimator = 10000
+        rf = RandomForestClassifier(max_depth=2, n_estimators=n_estimator,
+                                    criterion='entropy', random_state=RANDOM_STATE)
+        rf.fit(X_train, y_train)
+
+        # The random forest model by itself
+        y_pred_rf = rf.predict_proba(X_test)[:, 1]
+        y_pred = rf.predict(X_test)
+
+        return y_pred, y_pred_rf
+
+    def process(self, file_name):
+        features, bins = self.calcFeatures(file_name)
+        self.classifier(features, bins)
