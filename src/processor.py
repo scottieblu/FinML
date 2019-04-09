@@ -1,4 +1,6 @@
+import platform
 from multiprocessing import cpu_count
+from pathlib import PurePath
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -30,6 +32,8 @@ class Processor:
         self.tEvents = []
         self.t1 = []
         self.close = []
+        self.features = []
+        self.bins = []
 
         if platform.system() == "Windows":
             self.cpus = 1
@@ -42,7 +46,7 @@ class Processor:
         return pd.read_parquet(infp)
 
     def cleanResample(self, df, frequency='1T'):
-        df = data_cleaner.remove_outliers(df, 'price')
+        df = self.data_cleaner.remove_outliers(df, 'price')
         return df.resample(frequency).median().drop_duplicates().dropna()
 
     def dollarBars(self, df):
@@ -64,8 +68,8 @@ class Processor:
         self.df = self.loadParquetData(file_name)
         self.df = self.cleanResample(self.df, '1T')
         self.dailyVol, self.close = self.dollarBars(self.df)
-        self.tEvents = labeller.getTEvents(self.close, h=self.dailyVol.mean())
-        self.t1 = labeller.addVerticalBarrier(tEvents, self.close, numDays=1)
+        self.tEvents = self.labeller.getTEvents(self.close, h=self.dailyVol.mean())
+        self.t1 = self.labeller.addVerticalBarrier(self.tEvents, self.close, numDays=1)
 
         # special features
         # moving average
@@ -77,7 +81,7 @@ class Processor:
         window = 20
         numsd = 1
         bband = src.features.indicators.bollinger_band.BollingerBand()
-        bb_side_raw = bband.get_side(close, window=window, numsd=numsd)
+        bb_side_raw = bband.get_side(self.close, window=window, numsd=numsd)
 
         minRet = .01
         ptsl = [0, 2]
@@ -101,7 +105,7 @@ class Processor:
         return features, bb_bins
 
     def classifier(self, features, bins):
-        Xy = (pd.merge_asof(features, bb_bins[['bin']],
+        Xy = (pd.merge_asof(features, bins[['bin']],
                             left_index=True, right_index=True,
                             direction='forward').dropna())
 
@@ -113,7 +117,7 @@ class Processor:
 
         n_estimator = 10000
         rf = RandomForestClassifier(max_depth=2, n_estimators=n_estimator,
-                                    criterion='entropy', random_state=RANDOM_STATE)
+                                    criterion='entropy')
         rf.fit(X_train, y_train)
 
         # The random forest model by itself
@@ -123,5 +127,5 @@ class Processor:
         return y_pred, y_pred_rf
 
     def process(self, file_name):
-        features, bins = self.calcFeatures(file_name)
-        self.classifier(features, bins)
+        self.features, self.bins = self.calcFeatures(file_name)
+        # y_pred, y_pred_rf = self.classifier(self.features, self.bins)
