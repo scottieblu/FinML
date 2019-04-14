@@ -5,11 +5,11 @@ from pathlib import PurePath
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
-import src.preprocessing.bars as bar
-import src.preprocessing.datacleaner as dc
-import src.preprocessing.features.bollinger_band
-import src.preprocessing.features.crossover
-import src.preprocessing.labeller as lab
+import src.features.bars as bar
+import src.features.datacleaner as dc
+import src.features.indicators.bollinger_band
+import src.features.indicators.crossover
+import src.features.labeller as lab
 from src.utils.utils import *
 
 
@@ -18,7 +18,7 @@ class Processor:
     data_cleaner = dc.DataCleaner()
     bars = bar.Bars()
     labeller = lab.Labeller()
-    crossover = src.preprocessing.features.crossover.MACrossover()
+    crossover = src.features.indicators.crossover.MACrossover()
 
     def __init__(self, pdir):
         self.data_dir = pdir / 'data'
@@ -80,7 +80,7 @@ class Processor:
         # bollinger bands
         window = 20
         numsd = 1
-        bband = src.preprocessing.features.bollinger_band.BollingerBand()
+        bband = src.features.indicators.bollinger_band.BollingerBand()
         bb_side_raw = bband.get_side(self.close, window=window, numsd=numsd)
 
         minRet = .01
